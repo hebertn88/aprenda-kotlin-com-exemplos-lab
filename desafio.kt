@@ -30,6 +30,15 @@ data class Formacao(val nome: String, val conteudos: MutableSet<ConteudoEducacio
         val totalConteudosEstudados = conteudos.intersect(usuario.conteudosEstudados).size.toDouble()
         return totalConteudosEstudados / totalConteudos * 100
     }
+
+    // calcula duracao da Formacao a partir dos conteudos educacionais adicionados
+    val duracao: Int
+    get() {
+        // verifica se ha cursos vinculados a formacao
+        if (conteudos.isEmpty()) throw EmptyCollectionException("Não há Conteúdos Educacionais vinculados a Formação.")
+        
+        return conteudos.fold(0) { sum, c -> sum + c.duracao }
+    }
     
     // calcula nivel da Formacao a partir dos conteudos educacionais adicionados
     val nivel: Nivel 
