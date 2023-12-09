@@ -20,17 +20,6 @@ data class Formacao(val nome: String, val conteudos: MutableSet<ConteudoEducacio
         
     fun addConteudos(vararg conteudosArg: ConteudoEducacional) = conteudos.addAll(conteudosArg)
     
-    fun progressoPorUsuario(usuario: Usuario): Number {
-        // verifica se aluno foi matriculado
-        if (!inscritos.contains(usuario)) throw IllegalArgumentException("Usuário não inscrito na Formação.")
-        // verifica se ha cursos vinculados a formacao
-        if (conteudos.isEmpty()) throw EmptyCollectionException("Não há Conteúdos Educacionais vinculados a Formação.")
-        
-        val totalConteudos = conteudos.size.toDouble()
-        val totalConteudosEstudados = conteudos.intersect(usuario.conteudosEstudados).size.toDouble()
-        return totalConteudosEstudados / totalConteudos * 100
-    }
-
     // calcula duracao da Formacao a partir dos conteudos educacionais adicionados
     val duracao: Int
     get() {
@@ -46,19 +35,27 @@ data class Formacao(val nome: String, val conteudos: MutableSet<ConteudoEducacio
             // verifica se ha cursos vinculados a formacao
             if (conteudos.isEmpty()) throw EmptyCollectionException("Não há Conteúdos Educacionais vinculados a Formação.")
          	
-            return conteudos.groupingBy {it.nivel}
+            return conteudos.groupingBy { it.nivel }
                 .eachCount()
-                .entries
-                .sortedByDescending {it.value}
-                .first().key
+                .entries.maxByOrNull { it.value }!!.key
         }
+
+    fun progressoPorUsuario(usuario: Usuario): Double {
+        // verifica se aluno foi matriculado
+        if (!inscritos.contains(usuario)) throw IllegalArgumentException("Usuário não inscrito na Formação.")
+        // verifica se ha cursos vinculados a formacao
+        if (conteudos.isEmpty()) throw EmptyCollectionException("Não há Conteúdos Educacionais vinculados a Formação.")
+
+        val totalConteudos = conteudos.size.toDouble()
+        val totalConteudosEstudados = conteudos.intersect(usuario.conteudosEstudados).size.toDouble()
+        return totalConteudosEstudados / totalConteudos * 100
+    }
 }
 
 fun main() {
     // TODO("Analise as classes modeladas para este domínio de aplicação e pense em formas de evoluí-las.")
     // TODO("Simule alguns cenários de teste. Para isso, crie alguns objetos usando as classes em questão.")
-    val aprendendoKotlin = Formacao("Aprendendo Kotlin na Prática em Sua Documentação Oficial")
-    
+
     // cria instancias de conteudos educacionais
     val c01Conhecendo = ConteudoEducacional("Conhecendo o Kotlin e Sua Documentação Oficial", Nivel.BASICO, 60)
     val c02Introducao = ConteudoEducacional("Introdução Prática à Linguagem de Programação Kotlin", Nivel.BASICO, 120)
@@ -67,21 +64,28 @@ fun main() {
     val c05Funcoes = ConteudoEducacional("O Poder das Funções em Kotlin", Nivel.BASICO, 120)
     val c06Excecoes = ConteudoEducacional("Tratamento de Exceções em Kotlin", Nivel.INTERMEDIARIO, 120)
     
-    // adiciona conteudos educacionais a formacao
-    aprendendoKotlin.addConteudos(c01Conhecendo, c02Introducao, c03ControleFluxo, c04POO, c05Funcoes, c06Excecoes)
-    
     // cria instancias de usuario
     val u1 = Usuario("Hebert")
     val u2 = Usuario("Maria")
-    
+
+    // cria instancia de formacao
+    val aprendendoKotlin = Formacao("Aprendendo Kotlin na Prática em Sua Documentação Oficial")
+
+    // adiciona conteudos educacionais a formacao
+    aprendendoKotlin.addConteudos(c01Conhecendo, c02Introducao, c03ControleFluxo, c04POO, c05Funcoes, c06Excecoes)
+
     aprendendoKotlin.matricular(u1, u2) // matricula usuario na formacao
-    
-    println(aprendendoKotlin.inscritos) // exibe usuarios inscritos na formacao
-    println(aprendendoKotlin.conteudos) // exibe conteudos da formacao
-    
+
+    // exibe dados da Formacao
+    println("Formacao: ${aprendendoKotlin.nome}")
+    println("Inscritos: ${aprendendoKotlin.inscritos}")
+    println("Conteudos: ${aprendendoKotlin.conteudos}")
+    println("Duracao: ${aprendendoKotlin.duracao}")
+    println("Nivel: ${aprendendoKotlin.nivel}")
+
     println()
-    
-    u1 estudou c01Conhecendo // usando infix function
+
+    u1 estudou c01Conhecendo // uso de infix function
     
     println("${u1.nome} estudou ${u1.conteudosEstudados}")
 
